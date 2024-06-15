@@ -535,6 +535,7 @@ class StableDiffusionUpscalePipeline(DiffusionPipeline, TextualInversionLoaderMi
         callback_steps: int = 1,
         cross_attention_kwargs: Optional[Dict[str, Any]] = None,
         clip_skip: int = None,
+        noise_level_sub = 0,
     ):
         r"""
         The call function to the pipeline for generation.
@@ -682,7 +683,7 @@ class StableDiffusionUpscalePipeline(DiffusionPipeline, TextualInversionLoaderMi
         # 5. Add noise to image
         noise_level = torch.tensor([noise_level], dtype=torch.long, device=device)
         noise = randn_tensor(image.shape, generator=generator, device=device, dtype=prompt_embeds.dtype)
-        image = self.low_res_scheduler.add_noise(image, noise, noise_level)
+        image = self.low_res_scheduler.add_noise(image, noise, noise_level - noise_level_sub)
 
         batch_multiplier = 2 if do_classifier_free_guidance else 1
         image = torch.cat([image] * batch_multiplier * num_images_per_prompt)
