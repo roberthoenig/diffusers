@@ -470,6 +470,14 @@ def parse_args():
             " more information see https://huggingface.co/docs/accelerate/v0.17.0/en/package_reference/accelerator#accelerate.Accelerator"
         ),
     )
+    parser.add_argument(
+        "--token",
+        type=str,
+        default="nulevoy",
+        help=(
+            "The special word to use for finetuning."
+        ),
+    )
 
     args = parser.parse_args()
     env_local_rank = int(os.environ.get("LOCAL_RANK", -1))
@@ -748,8 +756,10 @@ def main():
         captions = []
         for caption in examples[caption_column]:
             if isinstance(caption, str):
+                caption += f" by {args.token}"
                 captions.append(caption)
             elif isinstance(caption, (list, np.ndarray)):
+                raise Exception()
                 # take a random caption if there are multiple
                 captions.append(random.choice(caption) if is_train else caption[0])
             else:
@@ -996,7 +1006,7 @@ def main():
                 accelerator.log({"train_loss": train_loss}, step=global_step)
                 train_loss = 0.0
 
-                if global_step % args.checkpointing_steps == 0:
+                if False and global_step % args.checkpointing_steps == 0:
                     if accelerator.is_main_process:
                         # _before_ saving state, check if this save would set us over the `checkpoints_total_limit`
                         if args.checkpoints_total_limit is not None:
